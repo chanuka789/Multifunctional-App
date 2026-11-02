@@ -67,11 +67,11 @@ Tests: `npm test` (layout engine, page ranges, loudness meter, silence remover, 
 
 ## Deploy on Railway
 
-1. **New project → Deploy from GitHub repo** → pick this repository and branch. `railway.json` sets the build (`npm ci && npm run build`), start command, and the `/healthz` health check.
+1. **New project → Deploy from GitHub repo** → pick this repository and branch. `railway.json` sets the build (`npm run build`; Railway installs packages itself), start command, and the `/healthz` health check.
 2. **Add PostgreSQL** to the project (+ New → Database → PostgreSQL). In the app service's **Variables**, add `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`.
 3. **Add a Bucket** (+ New → Bucket). In the app service's Variables, add references to the bucket's variables:
    `BUCKET=${{Bucket.BUCKET}}`, `ENDPOINT=${{Bucket.ENDPOINT}}`, `REGION=${{Bucket.REGION}}`, `ACCESS_KEY_ID=${{Bucket.ACCESS_KEY_ID}}`, `SECRET_ACCESS_KEY=${{Bucket.SECRET_ACCESS_KEY}}` (use your bucket service's real name).
-4. Add `NODE_ENV=production` and a random `IP_SALT`.
+4. Add `NODE_ENV=production`, `NPM_CONFIG_INCLUDE=dev` (so the build tools install) and a random `IP_SALT`.
 5. **Settings → Networking → Generate domain.** The app reads `RAILWAY_PUBLIC_DOMAIN` automatically; set `PUBLIC_ORIGIN` only if you add a custom domain.
 6. Deploy. On start the server creates its tables and tries to set the bucket's CORS rule for your domain. If the log says it could not, set it once with the AWS CLI:
 
