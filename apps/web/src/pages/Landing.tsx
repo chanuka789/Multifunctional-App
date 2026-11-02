@@ -89,6 +89,7 @@ function Hero() {
               <span className="slot" role="img" aria-label="A voice recording, playing">
                 <LiveWave speed={speed} clean={clean} />
               </span>
+              <span className="br-sm" aria-hidden="true" />
               <span className="w-device">your device</span>
             </span>
           </span>

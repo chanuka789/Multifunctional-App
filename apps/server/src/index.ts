@@ -69,9 +69,11 @@ app.use('/assets/*', async (c, next) => {
   if (c.res.status === 200) c.header('Cache-Control', 'public, max-age=31536000, immutable');
 });
 app.use('*', serveStatic({ root, precompressed: true }));
-let indexHtml: string | null = null;
+// A missing hashed file must be a 404, never the HTML page (that breaks module loading after a deploy).
+app.get('/assets/*', (c) => c.text('Not found', 404));
 app.get('*', async (c) => {
-  indexHtml ??= existsSync(join(config.webDist, 'index.html')) ? await readFile(join(config.webDist, 'index.html'), 'utf8') : '<h1>Build the web app first: npm run build</h1>';
+  const file = join(config.webDist, 'index.html');
+  const indexHtml = existsSync(file) ? await readFile(file, 'utf8') : '<h1>Build the web app first: npm run build</h1>';
   c.header('Cache-Control', 'no-cache');
   return c.html(indexHtml);
 });

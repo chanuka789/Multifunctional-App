@@ -288,3 +288,70 @@ export function detectPictures(gray: Uint8Array, w: number, h: number, textBoxes
   }
   return out;
 }
+
+/**
+ * Ink that no recognised word covers: usually text Tesseract skipped (very large titles,
+ * bold table headers). Returns line-shaped regions to read again.
+ */
+export function uncoveredText(bin: Uint8Array, w: number, h: number, covered: Box[], exclude: Box[]): Box[] {
+  const cell = 8;
+  const gw = Math.ceil(w / cell), gh = Math.ceil(h / cell);
+  const cov = new Uint8Array(gw * gh);
+  const mark = (b: Box, pad: number) => {
+    for (let y = Math.max(0, Math.floor((b.y0 - pad) / cell)); y <= Math.min(gh - 1, Math.floor((b.y1 + pad) / cell)); y++)
+      for (let x = Math.max(0, Math.floor((b.x0 - pad) / cell)); x <= Math.min(gw - 1, Math.floor((b.x1 + pad) / cell)); x++) cov[y * gw + x] = 1;
+  };
+  covered.forEach((b) => mark(b, 4));
+  exclude.forEach((b) => mark(b, 6));
+  const ink = new Uint8Array(gw * gh);
+  for (let gy = 0; gy < gh; gy++)
+    for (let gx = 0; gx < gw; gx++) {
+      if (cov[gy * gw + gx]) continue;
+      let n = 0;
+      for (let y = gy * cell; y < Math.min(h, gy * cell + cell); y++) for (let x = gx * cell; x < Math.min(w, gx * cell + cell); x++) n += bin[y * w + x];
+      if (n >= 3) ink[gy * gw + gx] = 1;
+    }
+  // join letters into words and lines: close small horizontal gaps
+  const joined = new Uint8Array(ink);
+  for (let gy = 0; gy < gh; gy++) {
+    let last = -99;
+    for (let gx = 0; gx < gw; gx++) {
+      if (ink[gy * gw + gx]) {
+        if (gx - last > 1 && gx - last <= 6) for (let k = last + 1; k < gx; k++) if (!cov[gy * gw + k]) joined[gy * gw + k] = 1;
+        last = gx;
+      }
+    }
+  }
+  const seen = new Uint8Array(gw * gh);
+  const out: Box[] = [];
+  for (let i = 0; i < joined.length; i++) {
+    if (!joined[i] || seen[i]) continue;
+    let x0 = gw, y0 = gh, x1 = 0, y1 = 0, count = 0;
+    const st = [i];
+    seen[i] = 1;
+    while (st.length) {
+      const j = st.pop()!;
+      const x = j % gw, y = (j / gw) | 0;
+      count++;
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue;
+          const k = ny * gw + nx;
+          if (joined[k] && !seen[k]) {
+            seen[k] = 1;
+            st.push(k);
+          }
+        }
+    }
+    const bw = (x1 - x0 + 1) * cell, bh = (y1 - y0 + 1) * cell;
+    // text-like: wider than tall, not a hairline, not the whole page
+    if (bw >= 40 && bh >= 16 && bh <= h * 0.2 && bw / bh >= 1.2 && count >= 8)
+      out.push({ x0: Math.max(0, x0 * cell - 6), y0: Math.max(0, y0 * cell - 6), x1: Math.min(w, (x1 + 1) * cell + 6), y1: Math.min(h, (y1 + 1) * cell + 6) });
+  }
+  return out;
+}

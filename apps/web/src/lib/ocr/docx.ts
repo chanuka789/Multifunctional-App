@@ -89,6 +89,7 @@ function nodes(list: DocNode[], maxWidthPt: number): (Paragraph | Table)[] {
     } else if (n.type === 'table') {
       const total = n.colWidthsPt.reduce((a, b) => a + b, 0);
       const k = Math.min(1, maxWidthPt / total);
+      if (n.spaceBeforePt > 4) out.push(new Paragraph({ spacing: { before: Math.round(Math.min(n.spaceBeforePt, 72) * TW) - 240, after: 0 }, children: [] }));
       out.push(
         new Table({
           columnWidths: n.colWidthsPt.map((w) => Math.round(w * k * TW)),

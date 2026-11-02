@@ -70,6 +70,7 @@ export interface TableNode {
   type: 'table';
   colWidthsPt: number[];
   rows: { heightPt: number; cells: { span: number; paras: ParaNode[] }[] }[];
+  spaceBeforePt: number;
 }
 
 export interface ImageNode {

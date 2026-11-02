@@ -45,7 +45,7 @@ export function nodeHtml(n: DocNode): string {
           `<tr data-h="${r.heightPt}">${r.cells.map((c) => `<td${c.span > 1 ? ` colspan="${c.span}"` : ''}>${c.paras.map(paraHtml).join('') || '<p data-role="p" data-font="10"><br></p>'}</td>`).join('')}</tr>`,
       )
       .join('');
-    return `<table data-type="table" data-cols="${n.colWidthsPt.join(',')}"><colgroup>${cols}</colgroup><tbody>${rows}</tbody></table>`;
+    return `<table data-type="table" data-space="${n.spaceBeforePt}" style="margin-top:${Math.min(n.spaceBeforePt, 72)}pt" data-cols="${n.colWidthsPt.join(',')}"><colgroup>${cols}</colgroup><tbody>${rows}</tbody></table>`;
   }
   return `<div data-type="columns" data-gap="${n.gapPt}" data-space="${n.spaceBeforePt}" class="cols" style="margin-top:${Math.min(n.spaceBeforePt, 72)}pt;gap:${n.gapPt}pt;grid-template-columns:${n.cols.map((c) => `${c.widthPt.toFixed(0)}fr`).join(' ')}">${n.cols
     .map((c) => `<div data-w="${c.widthPt}">${c.nodes.map(nodeHtml).join('')}</div>`)
@@ -130,7 +130,7 @@ function readNodes(container: Element): DocNode[] {
         })),
       }));
       const n = Math.max(...rows.map((r) => r.cells.reduce((a, c) => a + c.span, 0)));
-      out.push({ type: 'table', colWidthsPt: colWidthsPt.length === n ? colWidthsPt : Array(n).fill(480 / n), rows });
+      out.push({ type: 'table', colWidthsPt: colWidthsPt.length === n ? colWidthsPt : Array(n).fill(480 / n), rows, spaceBeforePt: Number(child.dataset.space) || 0 });
     } else if (child.dataset.type === 'columns') {
       out.push({
         type: 'columns',

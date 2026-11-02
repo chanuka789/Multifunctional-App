@@ -115,7 +115,7 @@ export default function Ocr() {
                 confs.push(r.confidence);
                 const page = buildPage(r.raw, cropper(r.canvas));
                 pages.push({ ...page, widthPt: vp.width, heightPt: vp.height });
-                searchable.push({ kind: 'ocr', canvas: r.canvas, textPdf: r.textPdf, widthPt: vp.width, heightPt: vp.height });
+                searchable.push({ kind: 'ocr', canvas: r.canvas, textPdf: r.textPdf, layers: r.layers, widthPt: vp.width, heightPt: vp.height });
               }
               previews.push(preview(canvas));
             } else {
@@ -124,9 +124,10 @@ export default function Ocr() {
               progress(done / total, `${label}: reading the text`);
               const r = await ocrCanvas(w, canvas);
               confs.push(r.confidence);
+              if ((window as any).__ONDEVO_DEBUG) (window as any).__ondevoRaw = r.raw;
               const page = buildPage(r.raw, cropper(r.canvas));
               pages.push(page);
-              searchable.push({ kind: 'ocr', canvas: r.canvas, textPdf: r.textPdf, widthPt: page.widthPt, heightPt: page.heightPt });
+              searchable.push({ kind: 'ocr', canvas: r.canvas, textPdf: r.textPdf, layers: r.layers, widthPt: page.widthPt, heightPt: page.heightPt });
               previews.push(preview(r.canvas));
             }
             done++;

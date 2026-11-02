@@ -11,8 +11,13 @@ serveWorker(async (msg, progress) => {
   const channels: Float32Array[] = msg.channels;
   const tempo: number = msg.tempo ?? 1;
   const semitones: number = msg.semitones ?? 0;
-  const left = channels[0];
-  const right = channels[1] ?? channels[0];
+  const srcLen = channels[0].length;
+  // SoundTouch holds back its last few thousand samples; feed padding so the real end comes out.
+  const pad = 16384;
+  const left = new Float32Array(srcLen + pad);
+  left.set(channels[0]);
+  const right = new Float32Array(srcLen + pad);
+  right.set(channels[1] ?? channels[0]);
   const len = left.length;
 
   const st = new SoundTouch();
@@ -29,6 +34,7 @@ serveWorker(async (msg, progress) => {
     },
   };
   const filter = new SimpleFilter(source, st);
+  const target = Math.round(srcLen / tempo);
   const expected = Math.ceil(len / tempo) + 8192;
   const outL = new Float32Array(expected);
   const outR = new Float32Array(expected);
@@ -47,7 +53,9 @@ serveWorker(async (msg, progress) => {
     written += n;
     if (written >= expected) break;
     if (++iter % 20 === 0) progress(Math.min(0.99, filter.sourcePosition / len));
+    if (written >= target) break;
   }
-  const res = channels.length > 1 ? [outL.slice(0, written), outR.slice(0, written)] : [outL.slice(0, written)];
+  const n = Math.min(written, target);
+  const res = channels.length > 1 ? [outL.slice(0, n), outR.slice(0, n)] : [outL.slice(0, n)];
   return { result: res, transfer: res.map((c) => c.buffer) };
 });

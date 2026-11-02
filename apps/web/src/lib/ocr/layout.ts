@@ -104,11 +104,71 @@ export function xyCut(items: Item[], bodyLineH: number, pageW: number, depth = 0
   return { kind: 'leaf', box, items: [...items].sort((a, b) => a.box.y0 - b.box.y0) };
 }
 
+
+/**
+ * Tesseract sometimes reads straight across a column gutter, so one "line" holds text from two
+ * columns. Split lines at wide gaps, then rebuild paragraphs from line pieces that sit under each other.
+ */
+export function regroup(paras: OcrPara[]): OcrPara[] {
+  type Seg = OcrLine & { tid: number };
+  const segs: Seg[] = [];
+  paras.forEach((p, tid) =>
+    p.lines.forEach((l) => {
+      const ws = [...l.words].sort((a, b) => a.x0 - b.x0);
+      const lh = median(ws.map(H)) || H(l);
+      const gapsW = ws.slice(1).map((w, i) => w.x0 - ws[i].x1);
+      const typical = median(gapsW.filter((g) => g > 0 && g < lh * 1.2)) || lh * 0.3;
+      let cur: OcrWord[] = [];
+      ws.forEach((w, i) => {
+        if (i > 0 && gapsW[i - 1] > Math.max(lh * 1.6, typical * 4)) {
+          segs.push({ ...union(cur), words: cur, tid });
+          cur = [];
+        }
+        cur.push(w);
+      });
+      if (cur.length) segs.push({ ...union(cur), words: cur, tid });
+    }),
+  );
+  segs.sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+  const out: (OcrPara & { last: Seg })[] = [];
+  for (const sg of segs) {
+    const lh = lineHeight(sg);
+    let best: (typeof out)[number] | null = null;
+    for (const p of out) {
+      const last = p.last;
+      const gap = sg.y0 - last.y1;
+      const overlap = Math.min(last.x1, sg.x1) - Math.max(last.x0, sg.x0);
+      const similar = Math.abs(lineHeight(last) - lh) / Math.max(lineHeight(last), lh) < 0.25;
+      const limit = last.tid === sg.tid ? lh * 0.9 : lh * 0.35;
+      if (gap > -lh * 0.3 && gap < limit && overlap > Math.min(W(sg), W(last)) * 0.3 && similar && sg.y0 > last.y0 + lh * 0.3) best = p;
+    }
+    if (best) {
+      best.lines.push(sg);
+      Object.assign(best, union([best, sg]));
+      best.last = sg;
+    } else out.push({ ...union([sg]), lines: [sg], last: sg });
+  }
+  return out.map(({ last: _last, ...p }) => p);
+}
+
+/** Bullet dots are small; OCR often reads them as "6", "e", "o" or "*". */
+export function fixBullets(paras: OcrPara[]) {
+  for (const p of paras)
+    for (const l of p.lines) {
+      const [first, second] = l.words;
+      if (!first || !second || first.text.length > 2 || BULLET.test(first.text + ' ')) continue;
+      const rest = median(l.words.slice(1).map(H));
+      const small = H(first) < rest * 0.62 && W(first) < rest * 0.9;
+      if (small && second.x0 - first.x1 > W(first) * 0.6 && !/^\d+[.)]$/.test(first.text)) first.text = '•';
+    }
+}
+
 /* ---------- Paragraph analysis ---------- */
 
+/** Height from the top of the tallest letter to the bottom of the lowest: about 0.93 em. */
 function lineHeight(l: OcrLine) {
   const hs = l.words.map(H).filter((h) => h > 0);
-  return hs.length ? Math.max(median(hs), H(l) * 0.8) : H(l);
+  return hs.length ? Math.max(...hs) : H(l);
 }
 
 export function classifyAlign(p: OcrPara, col: Box): Align {
@@ -196,11 +256,8 @@ export function paraNode(p: OcrPara, col: Box, prevBottom: number | null, o: Bui
     const r0 = lines[0][0];
     r0.text = r0.text.replace(BULLET, '');
     if (!r0.text.trim() && lines[0].length > 1) lines[0].shift();
-    if (!lines[0][0]?.text.trim()) {
-      // bullet was its own "word"
-      lines[0].shift();
-      if (lines[0][0]) lines[0][0].text = lines[0][0].text.replace(/^\s+/, '');
-    }
+    if (lines[0][0] && !lines[0][0].text.trim()) lines[0].shift();
+    if (lines[0][0]) lines[0][0].text = lines[0][0].text.replace(/^\s+/, '');
   } else if (NUMBERED.test(text) && role === 'p' && text.length < 600) {
     list = 'number';
     role = 'li';
@@ -213,8 +270,8 @@ export function paraNode(p: OcrPara, col: Box, prevBottom: number | null, o: Bui
   const align = classifyAlign(p, col);
   const avgW = p.lines.reduce((s, l) => s + W(l), 0) / p.lines.length;
   const keepBreaks = role !== 'li' && p.lines.length > 1 && align !== 'justify' && avgW < W(col) * 0.55;
-  // Line box height runs about 1.05 em for mixed-case text.
-  const fontPt = role === 'p' || role === 'li' ? (Math.abs(ratio - 1) < 0.12 ? o.bodyPt : quantPt((lh / 1.05) * o.scale)) : quantPt((lh / 1.05) * o.scale);
+  // Line box height runs about 0.93 em for mixed-case text.
+  const fontPt = role === 'p' || role === 'li' ? (ratio > 0.6 && ratio < 1.22 ? o.bodyPt : quantPt(lh * 1.08 * o.scale)) : quantPt(lh * 1.08 * o.scale);
   return {
     type: 'para',
     role,
@@ -261,16 +318,18 @@ function tableNode(t: TableGrid, words: OcrWord[], o: BuildOptions): TableNode {
     }
     rows.push({ heightPt: (t.rows[r + 1] - t.rows[r]) * o.scale, cells });
   }
-  return { type: 'table', colWidthsPt, rows };
+  return { type: 'table', colWidthsPt, rows, spaceBeforePt: 0 };
 }
 
 /** Turn one OCR'd page into the document model. `crop` gives a data URL for a picture region. */
 export function buildPage(raw: RawPage, crop: (b: Box) => string): DocPage {
+  raw = { ...raw, paras: regroup(raw.paras) };
+  fixBullets(raw.paras);
   const { widthPt, heightPt } = paperFor(raw.width, raw.height);
   const scale = widthPt / raw.width;
   const lineHs = raw.paras.flatMap((p) => p.lines.flatMap((l) => Array(Math.max(1, l.words.length)).fill(lineHeight(l))));
   const bodyLineH = median(lineHs) || 20;
-  const bodyPt = Math.min(14, Math.max(8, quantPt((bodyLineH / 1.05) * scale)));
+  const bodyPt = Math.min(14, Math.max(8, quantPt(bodyLineH * 1.08 * scale)));
   const headSizes = [...new Set(raw.paras.filter((p) => p.lines.length <= 3).map((p) => median(p.lines.map(lineHeight))).filter((h) => h / bodyLineH >= 1.3))]
     .sort((a, b) => b - a)
     .reduce<number[]>((acc, h) => (acc.some((x) => Math.abs(x - h) / h < 0.12) ? acc : [...acc, h]), []);
@@ -335,7 +394,7 @@ function emit(t: Tree, col: Box, prevBottom: number | null, o: BuildOptions, cro
     for (const it of t.items) {
       const sp = bottom == null ? 0 : Math.max(0, (it.box.y0 - bottom) * o.scale);
       if (it.kind === 'para') nodes.push(paraNode(it.para, col, bottom, o));
-      else if (it.kind === 'table') nodes.push(tableNode(it.grid, it.words, o));
+      else if (it.kind === 'table') nodes.push({ ...tableNode(it.grid, it.words, o), spaceBeforePt: sp });
       else {
         const img: ImageNode = {
           type: 'image',

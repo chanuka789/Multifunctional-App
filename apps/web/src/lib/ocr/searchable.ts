@@ -1,8 +1,9 @@
 import { PDFDocument } from 'pdf-lib';
 import { canvasToBlob } from '../pdf';
+import type { TextLayer } from './engine';
 
 export type SearchablePage =
-  | { kind: 'ocr'; canvas: HTMLCanvasElement; textPdf: Uint8Array | null; widthPt: number; heightPt: number }
+  | { kind: 'ocr'; canvas: HTMLCanvasElement; textPdf: Uint8Array | null; layers?: TextLayer[]; widthPt: number; heightPt: number }
   | { kind: 'copy'; source: Uint8Array; index: number };
 
 /**
@@ -31,6 +32,16 @@ export async function buildSearchablePdf(pages: SearchablePage[], title: string,
         page.drawPage(layer, { x: 0, y: 0, width: p.widthPt, height: p.heightPt });
       } catch {
         /* text layer could not be embedded; the page picture is still correct */
+      }
+    }
+    // Regions read a second time: place each small text layer exactly over its region.
+    const k = p.widthPt / p.canvas.width;
+    for (const l of p.layers ?? []) {
+      try {
+        const [layer] = await out.embedPdf(l.pdf, [0]);
+        page.drawPage(layer, { x: l.x * k, y: p.heightPt - (l.y + l.h) * k, width: l.w * k, height: l.h * k });
+      } catch {
+        /* skip a layer that cannot be embedded */
       }
     }
   }
