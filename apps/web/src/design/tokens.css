@@ -1,0 +1,144 @@
+/*
+ * Ondevo design tokens.
+ * Direction: "The sentence is the layout" (taste-skill seed 1086466358), app screens "Framed sheet".
+ * Palette: navy ink on white, one tangerine accent used only on the primary action.
+ * Type: Archivo (variable width + weight). Display = narrowest + heaviest, text = normal width.
+ * Everything downstream references these tokens only.
+ */
+@import '@fontsource-variable/archivo/wdth.css';
+
+:root {
+  color-scheme: light;
+
+  /* Ground, ink, accent */
+  --bg: #ffffff;
+  --surface: #f4f4f2;
+  --surface-2: #ebebe7;
+  --ink: #1f2b4d;
+  --ink-strong: #141c33;
+  --muted: #565e74;
+  --accent: #f7941d;
+  --accent-press: #e5800a;
+  --accent-ink: #1f2b4d;
+
+  /* Whole fields of colour for chapters */
+  --field-dark: #05070a;
+  --field-dark-ink: #ffffff;
+  --field-dark-muted: #a9afbf;
+  --field-warm: #e3e1dc;
+  --field-warm-ink: #1f2b4d;
+
+  /* App chrome: tinted L-frame and white sheet */
+  --frame: #f3f5f8;
+  --sheet: #ffffff;
+  --sheet-edge: #e6e8ec;
+  --well: #f4f6f8;
+  --control: #ffffff;
+  --control-edge: #d9dce3;
+
+  /* Data and status (colour goes on data, not chrome) */
+  --data-1: #1f2b4d;
+  --data-2: #b25c00;
+  --data-soft: #c8cddb;
+  --ok: #1d7a4b;
+  --ok-soft: #e3f3ea;
+  --warn: #8a5a00;
+  --warn-soft: #fbf0d9;
+  --bad: #c0303a;
+  --bad-soft: #fbe6e7;
+
+  --focus: #1f6feb;
+
+  /* Type */
+  --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2.5rem, 1.2rem + 5vw, 5.5rem);
+  --step-display: clamp(4.5rem, 1rem + 12.5vw, 12rem);
+
+  /* Space and frame */
+  --margin: clamp(16px, 2.2vw, 32px);
+  --section-gap: clamp(120px, 14vw, 200px);
+  --radius-sheet: 16px;
+  --radius-card: 12px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
+  --dur-slow: 900ms;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #05070a;
+  --surface: #10141c;
+  --surface-2: #181d28;
+  --ink: #eef0f6;
+  --ink-strong: #ffffff;
+  --muted: #a3aabc;
+  --accent: #f7941d;
+  --accent-press: #ffa63d;
+  --accent-ink: #05070a;
+  --field-dark: #e3e1dc;
+  --field-dark-ink: #1f2b4d;
+  --field-dark-muted: #4b536a;
+  --field-warm: #141a26;
+  --field-warm-ink: #eef0f6;
+  --frame: #0b0e14;
+  --sheet: #11151d;
+  --sheet-edge: #222838;
+  --well: #0d1118;
+  --control: #161b25;
+  --control-edge: #2c3346;
+  --data-1: #e9ecf4;
+  --data-2: #ffad4d;
+  --data-soft: #3a4257;
+  --ok: #4fd08e;
+  --ok-soft: #10261b;
+  --warn: #f2c063;
+  --warn-soft: #2b2210;
+  --bad: #ff7b82;
+  --bad-soft: #2d1316;
+  --focus: #6aa5ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #05070a;
+    --surface: #10141c;
+    --surface-2: #181d28;
+    --ink: #eef0f6;
+    --ink-strong: #ffffff;
+    --muted: #a3aabc;
+    --accent: #f7941d;
+    --accent-press: #ffa63d;
+    --accent-ink: #05070a;
+    --field-dark: #e3e1dc;
+    --field-dark-ink: #1f2b4d;
+    --field-dark-muted: #4b536a;
+    --field-warm: #141a26;
+    --field-warm-ink: #eef0f6;
+    --frame: #0b0e14;
+    --sheet: #11151d;
+    --sheet-edge: #222838;
+    --well: #0d1118;
+    --control: #161b25;
+    --control-edge: #2c3346;
+    --data-1: #e9ecf4;
+    --data-2: #ffad4d;
+    --data-soft: #3a4257;
+    --ok: #4fd08e;
+    --ok-soft: #10261b;
+    --warn: #f2c063;
+    --warn-soft: #2b2210;
+    --bad: #ff7b82;
+    --bad-soft: #2d1316;
+    --focus: #6aa5ff;
+  }
+}

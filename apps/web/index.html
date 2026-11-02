@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ondevo — audio and document tools that run on your device</title>
+    <meta name="description" content="Remove noise, change speed, transcribe speech and turn scans into editable Word files with the layout kept. Free, private: every tool runs in your browser and nothing is uploaded." />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#05070a" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta property="og:title" content="Ondevo — studio tools on your device" />
+    <meta property="og:description" content="Noise removal, speed change, speech to text and OCR that keeps the layout. Runs in your browser. Nothing is uploaded." />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      try {
+        var t = localStorage.getItem('ondevo-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Ondevo runs its tools in your browser, so it needs JavaScript turned on.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

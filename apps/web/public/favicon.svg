@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Ondevo">
+  <rect width="32" height="32" rx="8" fill="#1f2b4d"/>
+  <g stroke-linecap="round" stroke-width="2.4" fill="none">
+    <path d="M6.5 13v6M10 9.5v13" stroke="#ffffff"/>
+    <path d="M13.5 12v8" stroke="#f7941d"/>
+    <path d="M17.5 11h8M17.5 16h6M17.5 21h8" stroke="#ffffff"/>
+  </g>
+</svg>
