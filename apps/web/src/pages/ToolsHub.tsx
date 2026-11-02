@@ -28,7 +28,7 @@ export default function ToolsHub() {
           </label>
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" aria-hidden="true" />
-            <input id="hub-q" className="input pl-10" placeholder="noise, 1.5x, pdf to word, subtitles…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input id="hub-q" className="input" style={{ paddingLeft: 40 }} placeholder="noise, 1.5x, pdf to word, subtitles…" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
         </div>
         <div className="seg" role="radiogroup" aria-label="Kind of tool">

@@ -19,6 +19,8 @@ export function AudioPreview({ takes, initial = takes.length - 1 }: { takes: Tak
   const [pos, setPos] = useState(0);
   const audio = useRef<HTMLAudioElement>(null);
   const take = takes[Math.min(active, takes.length - 1)];
+  // A new result arrives: switch to it so people hear the change straight away.
+  useEffect(() => setActive(takes.length - 1), [takes.length]);
 
   useEffect(() => {
     const a = audio.current;

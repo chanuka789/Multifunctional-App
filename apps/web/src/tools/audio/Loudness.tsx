@@ -10,7 +10,7 @@ export default function Loudness() {
   return (
     <AudioTool
       slug="loudness"
-      suffix={`${target}lufs`}
+      suffix={`lufs${target}`}
       actionLabel="Set the loudness"
       deps={[target]}
       options={

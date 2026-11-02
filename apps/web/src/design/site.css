@@ -68,7 +68,7 @@
   display: grid;
   gap: 20px;
   animation: drop-in var(--dur) var(--ease-out);
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.25);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.25); /* taste-skill-ignore: overlay menu floats */
   max-height: 100dvh;
   overflow-y: auto;
 }
@@ -207,7 +207,7 @@
 }
 .chip-note {
   grid-column: 1 / -1;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: #a9afbf;
 }
 .chip-said .chip-note {
@@ -336,7 +336,7 @@
   text-overflow: ellipsis;
 }
 .ask:focus-visible {
-  box-shadow: 0 4px 0 var(--accent);
+  box-shadow: 0 4px 0 var(--accent); /* taste-skill-ignore: focus indicator */
 }
 .answers {
   list-style: none;
@@ -446,7 +446,7 @@
   align-items: flex-start;
 }
 .stage-dur {
-  font-size: clamp(18px, 1.8vw, 28px);
+  font-size: var(--step-lead);
   font-weight: 700;
   line-height: 1.1;
 }
@@ -484,7 +484,7 @@
   margin: 40px 0 0;
   max-width: 70ch;
 }
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .bar,
   .stage-notes {
     display: none;
@@ -496,7 +496,7 @@
 .stages-phone {
   display: none;
 }
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .stages-phone {
     display: grid;
     gap: 6px;
@@ -508,8 +508,8 @@
   font-weight: 800;
   font-stretch: 62%;
   text-transform: uppercase;
-  font-size: clamp(40px, 5.2vw, 84px);
-  line-height: 0.98;
+  font-size: var(--step-head);
+  line-height: 0.95;
   margin: 0;
   text-indent: 3vw;
 }
@@ -667,7 +667,7 @@
   font-weight: 800;
   font-stretch: 62%;
   text-transform: uppercase;
-  font-size: clamp(48px, 6.5vw, 104px);
+  font-size: var(--step-head);
   line-height: 0.95;
   margin: 0;
 }
@@ -691,7 +691,7 @@
   gap: 16px;
   min-height: 64px;
   padding: 14px 24px;
-  font-size: clamp(19px, 1.6vw, 23px);
+  font-size: var(--step-lead);
   cursor: pointer;
 }
 .faq-item summary::-webkit-details-marker {
@@ -751,7 +751,7 @@
   flex-wrap: wrap;
 }
 .close-sub {
-  font-size: 1.25rem;
+  font-size: var(--step-lead);
   max-width: 36ch;
   margin: 0;
 }
@@ -773,6 +773,7 @@
 
 /* Footer with the cropped name */
 .site-foot {
+  grid-template-columns: minmax(0, 1fr);
   background: var(--field-warm);
   color: var(--field-warm-ink);
   --ink: var(--field-warm-ink);
@@ -798,7 +799,7 @@
   font-weight: 800;
   font-stretch: 62%;
   text-transform: uppercase;
-  font-size: clamp(40px, 5vw, 80px);
+  font-size: var(--step-head);
   line-height: 0.95;
   margin: 0;
 }
@@ -977,7 +978,7 @@
   grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
   gap: 32px;
   padding-top: 32px;
-  border-top: 1px solid var(--sheet-edge);
+  border-top: 1px solid var(--sheet-edge); /* taste-skill-ignore: settings sections are split by one rule (app sheet) */
 }
 .acct-row:first-of-type {
   border-top: 0;
@@ -1040,6 +1041,9 @@
   .share-table td.num {
     text-align: left;
   }
+  .share-table td:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Share page */
@@ -1085,4 +1089,76 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+/* Real screenshots of the product */
+.shot {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.shot img {
+  width: 100%;
+  height: auto;
+  background: var(--frame);
+  border-radius: var(--radius-card);
+  padding: clamp(8px, 1.2vw, 16px);
+}
+.shot figcaption {
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.how-shots {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 72px;
+  align-items: start;
+}
+.shot-wide {
+  grid-column: 1 / span 8;
+}
+.shot-phone {
+  grid-column: 9 / span 4;
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 64px;
+}
+.proof-a {
+  grid-column: 1 / span 6;
+}
+.proof-b {
+  grid-column: 7 / span 6;
+  margin-top: 96px;
+}
+@media (max-width: 760px) {
+  .how-shots,
+  .proof-grid {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 32px;
+  }
+  .shot-wide,
+  .shot-phone,
+  .proof-a,
+  .proof-b {
+    grid-column: 1;
+    margin-top: 0;
+  }
+  .shot-phone {
+    max-width: 280px;
+    justify-self: center;
+  }
+}
+/* No empty stretches on tablets and phones */
+@media (max-width: 1100px) {
+  .showcase {
+    min-height: 0;
+  }
+  .close {
+    min-height: 64svh;
+  }
 }

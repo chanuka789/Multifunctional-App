@@ -10,3 +10,4 @@ test-results
 playwright-report
 .taste-skill/inspect
 .taste-skill/app/inspect
+*.tsbuildinfo

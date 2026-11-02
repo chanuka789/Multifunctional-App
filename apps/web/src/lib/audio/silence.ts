@@ -15,10 +15,12 @@ export function removeSilence(p: Pcm, o: SilenceOptions): { pcm: Pcm; removed: n
   const thr = 10 ** (o.thresholdDb / 20);
   const loud = new Uint8Array(n);
   for (let w = 0; w < n; w++) {
-    let m = 0;
-    const s = w * win, e = Math.min(len, s + win);
-    for (const ch of p.channels) for (let i = s; i < e; i++) { const v = Math.abs(ch[i]); if (v > m) m = v; }
-    loud[w] = m >= thr ? 1 : 0;
+    // RMS over 30 ms around this window: steady hiss stays low, speech rises well above it
+    const s = Math.max(0, (w - 1) * win), e = Math.min(len, (w + 2) * win);
+    let sum = 0;
+    for (const ch of p.channels) for (let i = s; i < e; i++) sum += ch[i] * ch[i];
+    const rms = Math.sqrt(sum / Math.max(1, (e - s) * p.channels.length));
+    loud[w] = rms >= thr ? 1 : 0;
   }
   const minW = Math.round(o.minSilence / 0.01);
   const keepW = Math.round(o.keep / 0.01);
@@ -47,4 +49,20 @@ export function removeSilence(p: Pcm, o: SilenceOptions): { pcm: Pcm; removed: n
     pos += e - s;
   }
   return { pcm: { sampleRate: sr, channels }, removed: (len - kept) / sr, cuts };
+}
+
+/** Noise floor of a clip: the RMS level that the quietest 15% of 10 ms windows stay under (dBFS). */
+export function noiseFloorDb(p: Pcm): number {
+  const sr = p.sampleRate, win = Math.max(1, Math.round(0.01 * sr));
+  const len = p.channels[0].length;
+  const levels: number[] = [];
+  for (let s = 0; s < len; s += win) {
+    let sum = 0;
+    const e = Math.min(len, s + win);
+    for (const ch of p.channels) for (let i = s; i < e; i++) sum += ch[i] * ch[i];
+    levels.push(Math.sqrt(sum / Math.max(1, (e - s) * p.channels.length)));
+  }
+  levels.sort((a, b) => a - b);
+  const v = levels[Math.floor(levels.length * 0.15)] ?? 0;
+  return 20 * Math.log10(v + 1e-6);
 }

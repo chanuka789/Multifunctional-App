@@ -214,58 +214,22 @@ function HowItWorks() {
           </li>
         ))}
       </ol>
+      <div className="how-shots">
+        <figure className="shot shot-wide">
+          <img src="/shots/noise.jpg" width="1980" height="1724" loading="lazy" alt="The noise remover after cleaning a 12-second voice note: loudness raised from −20.1 to −16.3 LUFS, a Before and After player, and a Download MP3 button." />
+          <figcaption>A 12-second voice note, cleaned in 4.3 seconds on a laptop.</figcaption>
+        </figure>
+        <figure className="shot shot-phone">
+          <img src="/shots/phone-speed.jpg" width="780" height="1560" loading="lazy" alt="The speed changer on a phone, set to 1.3 times, with the new length and a Download MP3 button." />
+          <figcaption>The same tools on a phone.</figcaption>
+        </figure>
+      </div>
       <p className="how-foot small muted">Timings are typical for a recent laptop and a ten-minute voice note. Older devices take longer; nothing is ever sent away to speed it up.</p>
     </section>
   );
 }
 
 /* ---------- List: every tool ---------- */
-
-function OcrFragment() {
-  return (
-    <figure className="frag" data-ui aria-label="A scanned letter beside the Word document Ondevo rebuilt from it">
-      <div className="frag-scan">
-        <p className="frag-h">ශ්‍රී ලංකා තැපැල්</p>
-        <p>Colombo 07</p>
-        <p className="frag-gap">Dear Ms. Perera,</p>
-        <p>Your parcel is ready to collect at the counter from Monday.</p>
-        <table>
-          <tbody>
-            <tr>
-              <td>Ref</td>
-              <td>LK-2041</td>
-            </tr>
-            <tr>
-              <td>Weight</td>
-              <td>1.2 kg</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="frag-doc">
-        <p className="frag-h">ශ්‍රී ලංකා තැපැල්</p>
-        <p>Colombo 07</p>
-        <p className="frag-gap">
-          Dear <mark>Ms.</mark> Perera,
-        </p>
-        <p>Your parcel is ready to collect at the counter from Monday.</p>
-        <table>
-          <tbody>
-            <tr>
-              <td>Ref</td>
-              <td>LK-2041</td>
-            </tr>
-            <tr>
-              <td>Weight</td>
-              <td>1.2 kg</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <figcaption className="small muted">Scan on the left, rebuilt DOCX on the right. One word is marked to check.</figcaption>
-    </figure>
-  );
-}
 
 function ToolList() {
   const ref = useReveal<HTMLElement>();
@@ -278,9 +242,10 @@ function ToolList() {
         none of them upload
       </h2>
       <div className="list-grid">
-        <div className="list-picture">
-          <OcrFragment />
-        </div>
+        <figure className="list-picture shot">
+          <img src="/shots/ocr.jpg" width="1556" height="1196" loading="lazy" alt="Document OCR review: the original scan on the left and the rebuilt, editable page on the right, with the same title, Sinhala subtitle, two columns, list and table." />
+          <figcaption>A scanned report and the Word page rebuilt from it, side by side.</figcaption>
+        </figure>
         <div className="list-table">
           {[
             ['Audio', audio],
@@ -302,6 +267,29 @@ function ToolList() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Proof: real screens ---------- */
+
+function Proof() {
+  const ref = useReveal<HTMLElement>();
+  return (
+    <section ref={ref} className="sec proof reveal" aria-labelledby="proof-title">
+      <h2 id="proof-title" className="head">
+        Results you can check
+      </h2>
+      <div className="proof-grid">
+        <figure className="shot proof-a">
+          <img src="/shots/transcript.jpg" width="1556" height="1060" loading="lazy" alt="Speech to text result: a transcript with timestamps and buttons for TXT, SRT and VTT subtitles." />
+          <figcaption>Speech to text, with subtitles ready to save.</figcaption>
+        </figure>
+        <figure className="shot proof-b">
+          <img src="/shots/pages.jpg" width="1980" height="1220" loading="lazy" alt="Organise PDF pages: page thumbnails, one rotated and one marked for removal." />
+          <figcaption>Pages rotated and removed before saving.</figcaption>
+        </figure>
       </div>
     </section>
   );
@@ -389,6 +377,7 @@ export default function Landing() {
         <Showcase />
         <HowItWorks />
         <ToolList />
+        <Proof />
         <Faq />
         <Close />
       </main>
